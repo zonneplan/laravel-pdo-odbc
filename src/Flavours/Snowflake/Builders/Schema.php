@@ -3,15 +3,13 @@
 namespace LaravelPdoOdbc\Flavours\Snowflake\Builders;
 
 use LogicException;
+use Illuminate\Database\Schema\Builder as BaseBuilder;
+
 use function count;
 use function in_array;
-use Illuminate\Database\Schema\Builder as BaseBuilder;
-use LaravelPdoOdbc\Flavours\Snowflake\Concerns\GrammarHelper;
 
 class Schema extends BaseBuilder
 {
-    use GrammarHelper;
-
     /**
      * Determine if the given table exists.
      *
@@ -21,7 +19,7 @@ class Schema extends BaseBuilder
      */
     public function hasTable($table)
     {
-        $table = $this->connection->getTablePrefix().$this->wrapTable($table);
+        $table = $this->connection->getTablePrefix().$this->grammar->wrapTable($table);
 
         return count($this->connection->select(
             $this->grammar->compileTableExists(),
@@ -55,7 +53,7 @@ class Schema extends BaseBuilder
      */
     public function getColumnListing($table)
     {
-        $table = $this->connection->getTablePrefix().$this->wrapTable($table);
+        $table = $this->connection->getTablePrefix().$this->grammar->wrapTable($table);
 
         $results = $this->connection->select(
             str_replace('{DB_NAME}', $this->connection->getDatabaseName(), $this->grammar->compileColumnListing()),

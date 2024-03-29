@@ -2,12 +2,13 @@
 
 namespace LaravelPdoOdbc\Flavours\Snowflake\Concerns;
 
-use function count;
 use Illuminate\Support\Str;
 use Illuminate\Database\Query\Expression;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\ColumnDefinition;
 use LaravelPdoOdbc\Flavours\Snowflake\Processor;
+use Illuminate\Database\Grammar;
+
+use function count;
 
 /**
  * This code is shared between the Query and Schema grammar.
@@ -15,15 +16,15 @@ use LaravelPdoOdbc\Flavours\Snowflake\Processor;
  *
  * Values: are wrapped within single qoutes.
  * Columns and Table names: are wrapped within double qoutes.
+ *
+ * @mixin Grammar
  */
 trait GrammarHelper
 {
     /**
      * Convert an array of column names into a delimited string.
-     *
-     * @return string
      */
-    public function columnize(array $columns)
+    public function columnize(array $columns): string
     {
         return implode(', ', array_map([$this, 'wrapColumn'], $columns));
     }
@@ -37,25 +38,13 @@ trait GrammarHelper
      */
     public function wrapTable($table)
     {
-        $table = Processor::wrapTable($table);
-
-        if (method_exists($this, 'isExpression') && ! $this->isExpression($table)) {
-            return $this->wrap($this->tablePrefix.$table, true);
+        if ($this->isExpression($table)) {
+            return $this->getValue($table);
         }
 
-        return $this->getValue($table);
-    }
+        $table = Processor::wrapTable($table);
 
-    /**
-     * Get the value of a raw expression.
-     *
-     * @param \Illuminate\Database\Query\Expression $expression
-     *
-     * @return string
-     */
-    public function getValue($expression)
-    {
-        return $expression instanceof Expression ? $expression->getValue() : $expression;
+        return $this->wrap($this->tablePrefix.$table, true);
     }
 
     /**
@@ -78,12 +67,16 @@ trait GrammarHelper
     /**
      * Wrap a single string in keyword identifiers.
      *
-     * @param string $value
+     * @param string|Expression $value
      *
      * @return string
      */
     protected function wrapColumn($column)
     {
+        if ($this->isExpression($column)) {
+            return $column->getValue($this);
+        }
+
         if ($column instanceof ColumnDefinition) {
             $column = $column->get('name');
         }
