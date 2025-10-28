@@ -32,11 +32,11 @@ trait GrammarHelper
     /**
      * Wrap a table in keyword identifiers.
      *
-     * @param \Illuminate\Database\Query\Expression|string $table
+     * @param \Illuminate\Database\Query\Expression|Illuminate\Database\Schema\Blueprint|string $table
      *
      * @return string
      */
-    public function wrapTable($table)
+    public function wrapTable($table, $prefix = null)
     {
         if ($this->isExpression($table)) {
             return $this->getValue($table);
@@ -44,7 +44,7 @@ trait GrammarHelper
 
         $table = Processor::wrapTable($table);
 
-        return $this->wrap($this->tablePrefix.$table, true);
+        return $this->wrap($prefix.$table);
     }
 
     /**
@@ -71,7 +71,7 @@ trait GrammarHelper
      *
      * @return string
      */
-    protected function wrapColumn($column)
+    protected function wrapColumn($column): string
     {
         if ($this->isExpression($column)) {
             return $column->getValue($this);
@@ -93,7 +93,7 @@ trait GrammarHelper
     }
 
     /**
-     * Wrap a single string in keyword identifiers.
+     * Wrap a single string in keypublic function wrapTable($table)word identifiers.
      *
      * @param string $value
      *
