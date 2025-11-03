@@ -38,14 +38,8 @@ class Connector extends ODBCConnector implements OdbcDriver
 
         $connection = parent::connect($config);
 
-        if ($usingSnowflakeDriver === false) {
-            // custom Statement class to resolve Streaming value and parameters.
-            if (PHP_VERSION_ID > 80000) {
-                $connection->setAttribute(PDO::ATTR_STATEMENT_CLASS, [\LaravelPdoOdbc\Flavours\Snowflake\PDO\Statement80::class, [$connection]]);
-            } else {
-                $connection->setAttribute(PDO::ATTR_STATEMENT_CLASS, [\LaravelPdoOdbc\Flavours\Snowflake\PDO\Statement74::class, [$connection]]);
-            }
-        }
+        // custom Statement class to resolve Streaming value and parameters.
+        $connection->setAttribute(PDO::ATTR_STATEMENT_CLASS, [\LaravelPdoOdbc\Flavours\Snowflake\PDO\Statement::class, [$connection]]);
 
         return $connection;
     }
@@ -60,9 +54,8 @@ class Connector extends ODBCConnector implements OdbcDriver
 
             // create connection
             $db = new Connection($connection, $database, $prefix, $config);
-
             if (!env('SNOWFLAKE_DISABLE_FORCE_QUOTED_IDENTIFIER')) {
-                $db->statement('ALTER SESSION SET QUOTED_IDENTIFIERS_IGNORE_CASE = false');
+                $connection->exec('ALTER SESSION SET QUOTED_IDENTIFIERS_IGNORE_CASE = false');
             }
 
             // set default fetch mode for PDO

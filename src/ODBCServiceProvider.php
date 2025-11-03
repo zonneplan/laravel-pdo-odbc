@@ -14,7 +14,7 @@ class ODBCServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function register()
+    public function register(): void
     {
         Connection::resolverFor('odbc', ODBCConnector::registerDriver());
         Connection::resolverFor('snowflake', SnowflakeConnector::registerDriver());
@@ -26,7 +26,7 @@ class ODBCServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         Model::setConnectionResolver($this->app['db']);
         Model::setEventDispatcher($this->app['events']);
